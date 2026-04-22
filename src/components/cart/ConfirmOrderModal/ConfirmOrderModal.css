@@ -1,0 +1,27 @@
+.confirm-order-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 12, 8, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+}
+
+.confirm-order-modal {
+  width: min(420px, 92vw);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.confirm-order-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.confirm-order-modal__confirm {
+  background: #7a4a2f;
+  color: #fff;
+  border: 1px solid #7a4a2f;
+}
