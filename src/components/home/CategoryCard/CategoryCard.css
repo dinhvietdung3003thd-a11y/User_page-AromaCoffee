@@ -1,0 +1,13 @@
+.category-card {
+  border: 1px solid #d8c8bf;
+  background-color: #fff;
+  border-radius: 0.7rem;
+  padding: 1rem;
+  cursor: pointer;
+  text-align: center;
+  color: #4b3b33;
+}
+
+.category-card:hover {
+  background-color: #f7efe9;
+}
