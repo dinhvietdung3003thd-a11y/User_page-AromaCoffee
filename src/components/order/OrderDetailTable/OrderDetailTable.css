@@ -1,0 +1,19 @@
+.order-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #eadfd8;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.order-detail-table th,
+.order-detail-table td {
+  text-align: left;
+  padding: 0.7rem;
+  border-bottom: 1px solid #efe3db;
+}
+
+.order-detail-table tr:last-child td {
+  border-bottom: 0;
+}

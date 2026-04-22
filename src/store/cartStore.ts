@@ -9,6 +9,7 @@ export interface CartStore {
   updateItem: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clearItems: () => void;
+  hydrateFromStorage: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
 }
@@ -36,6 +37,10 @@ export const useCartStore = (): CartStore => {
     setItems([]);
   };
 
+  const hydrateFromStorage = () => {
+    setItems(cartStorage.getCart());
+  };
+
   const openDrawer = () => setDrawerOpen(true);
   const closeDrawer = () => setDrawerOpen(false);
 
@@ -47,6 +52,7 @@ export const useCartStore = (): CartStore => {
     updateItem,
     removeItem,
     clearItems,
+    hydrateFromStorage,
     openDrawer,
     closeDrawer
   };

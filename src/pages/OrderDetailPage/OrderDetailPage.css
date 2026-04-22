@@ -3,3 +3,24 @@
   margin: 2rem auto;
   padding: 0 1.5rem;
 }
+
+.order-detail-page__meta {
+  margin-bottom: 1rem;
+}
+
+.order-detail-page__meta p {
+  margin: 0.25rem 0;
+}
+
+.order-detail-page__total {
+  margin-top: 1rem;
+}
+
+.order-detail-page__success {
+  margin-top: 0.8rem;
+  color: #2b7a0b;
+}
+
+.order-detail-page__back-link {
+  margin-top: 1rem;
+}
