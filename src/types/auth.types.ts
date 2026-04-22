@@ -1,10 +1,11 @@
-export interface UserProfile {
+export interface AuthUser {
   id: string;
   displayName: string;
+  email: string;
   avatarUrl: string;
 }
 
 export interface AuthState {
-  isLoggedIn: boolean;
-  user: UserProfile | null;
+  token: string | null;
+  user: AuthUser | null;
 }

@@ -1,11 +1,11 @@
 import { Link, NavLink } from 'react-router-dom';
 import { centerNavLinks } from '../../../config/navConfig';
 import { routePaths } from '../../../router/routePaths';
-import { getMockAuth } from '../../../utils/mockAuth';
+import { useAuthStore } from '../../../store/authStore';
 import './Navbar.css';
 
 function Navbar() {
-  const auth = getMockAuth();
+  const { isLoggedIn, user } = useAuthStore();
 
   return (
     <header className="navbar">
@@ -30,7 +30,7 @@ function Navbar() {
       </nav>
 
       <div className="navbar__right">
-        {!auth.isLoggedIn ? (
+        {!isLoggedIn ? (
           <>
             <Link className="navbar__action" to={routePaths.register}>
               Register
@@ -41,8 +41,8 @@ function Navbar() {
           </>
         ) : (
           <div className="navbar__user" aria-label="Current user">
-            <img alt="User avatar" className="navbar__avatar" src={auth.user?.avatarUrl} />
-            <span>{auth.user?.displayName}</span>
+            <img alt="User avatar" className="navbar__avatar" src={user?.avatarUrl} />
+            <span>{user?.displayName}</span>
           </div>
         )}
       </div>
