@@ -6,13 +6,14 @@ interface ProductSectionProps {
   category: ProductCategory;
   products: ProductItem[];
   sectionRef: (element: HTMLDivElement | null) => void;
+  onAdd?: (productId: string) => void;
 }
 
-function ProductSection({ category, products, sectionRef }: ProductSectionProps) {
+function ProductSection({ category, products, sectionRef, onAdd }: ProductSectionProps) {
   return (
     <section className="product-section" ref={sectionRef}>
       <h2>{category.name}</h2>
-      <ProductGrid products={products} />
+      <ProductGrid products={products} onAdd={onAdd} />
     </section>
   );
 }

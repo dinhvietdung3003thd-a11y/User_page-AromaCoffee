@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import CartDrawer from '../../components/cart/CartDrawer/CartDrawer';
 import ProductSection from '../../components/product/ProductSection/ProductSection';
 import ProductToolbar from '../../components/product/ProductToolbar/ProductToolbar';
 import SearchResultSection from '../../components/product/SearchResultSection/SearchResultSection';
 import { productService } from '../../services/productService';
+import { useCartStore } from '../../store/cartStore';
 import type { ProductCategory } from '../../types/product.types';
-import { cartStorage } from '../../utils/cartStorage';
 import './OurProductPage.css';
 
 function OurProductPage() {
@@ -17,10 +18,10 @@ function OurProductPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(defaultCategory);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const cartStore = useCartStore();
 
   const searchResults = useMemo(() => productService.searchProducts(searchTerm), [searchTerm]);
   const isSearching = searchTerm.trim().length > 0;
-  const cartCount = cartStorage.getCartCount();
 
   const scrollToCategory = (categoryId: string) => {
     const targetSection = sectionRefs.current[categoryId];
@@ -56,31 +57,47 @@ function OurProductPage() {
     [catalog.categories]
   );
 
+  const handleAddToCart = (productId: string) => {
+    cartStore.addItem(productId);
+  };
+
   return (
     <main className="our-product-page">
       <ProductToolbar
         categories={catalog.categories}
         searchTerm={searchTerm}
         selectedCategoryId={selectedCategoryId}
-        cartCount={cartCount}
+        cartCount={cartStore.itemCount}
         onSearchChange={setSearchTerm}
         onCategorySelect={handleCategorySelect}
+        onCartClick={cartStore.openDrawer}
       />
 
       {isSearching ? (
-        <SearchResultSection results={searchResults} searchTerm={searchTerm} />
+        <SearchResultSection results={searchResults} searchTerm={searchTerm} onAdd={handleAddToCart} />
       ) : (
         categoriesWithProducts.map(({ category, products }) => (
           <ProductSection
             key={category.id}
             category={category}
             products={products}
+            onAdd={handleAddToCart}
             sectionRef={(element) => {
               sectionRefs.current[category.id] = element;
             }}
           />
         ))
       )}
+
+      <CartDrawer
+        isOpen={cartStore.isDrawerOpen}
+        items={cartStore.items}
+        products={catalog.products}
+        onClose={cartStore.closeDrawer}
+        onUpdateItem={cartStore.updateItem}
+        onRemoveItem={cartStore.removeItem}
+        onClearItems={cartStore.clearItems}
+      />
     </main>
   );
 }

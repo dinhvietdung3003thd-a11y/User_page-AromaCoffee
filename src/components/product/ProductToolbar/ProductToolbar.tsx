@@ -11,6 +11,7 @@ interface ProductToolbarProps {
   cartCount: number;
   onSearchChange: (value: string) => void;
   onCategorySelect: (categoryId: string) => void;
+  onCartClick: () => void;
 }
 
 function ProductToolbar({
@@ -19,7 +20,8 @@ function ProductToolbar({
   selectedCategoryId,
   cartCount,
   onSearchChange,
-  onCategorySelect
+  onCategorySelect,
+  onCartClick
 }: ProductToolbarProps) {
   return (
     <section className="product-toolbar" aria-label="Product toolbar">
@@ -29,7 +31,7 @@ function ProductToolbar({
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={onCategorySelect}
       />
-      <CartButton count={cartCount} />
+      <CartButton count={cartCount} onClick={onCartClick} />
     </section>
   );
 }
