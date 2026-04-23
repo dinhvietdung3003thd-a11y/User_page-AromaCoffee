@@ -1,0 +1,39 @@
+.profile-page {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.profile-page__card {
+  max-width: 360px;
+  background: #fff;
+  border: 1px solid #e6d8cf;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.profile-page__avatar-wrap {
+  margin-bottom: 0.6rem;
+}
+
+.profile-page__avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: #d8ccc5;
+}
+
+.profile-page__actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.profile-page__actions button {
+  border: 1px solid #7a4a2f;
+  border-radius: 0.45rem;
+  background: #7a4a2f;
+  color: #fff;
+  padding: 0.45rem 0.75rem;
+}

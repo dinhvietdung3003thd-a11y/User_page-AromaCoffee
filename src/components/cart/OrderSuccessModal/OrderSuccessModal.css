@@ -1,0 +1,21 @@
+.order-success-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 12, 8, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+}
+
+.order-success-modal {
+  width: min(440px, 92vw);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.order-success-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
