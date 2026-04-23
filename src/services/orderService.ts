@@ -1,5 +1,26 @@
 import { appConfig } from '../config/appConfig';
-import type { OrderDetail, OrderSummary } from '../types/order.types';
+import type { OrderDetail, OrderItem, OrderSummary } from '../types/order.types';
+
+interface ApiOrderDetailItem {
+  orderDetailId: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+interface ApiClientOrder {
+  id: number;
+  orderDate: string;
+  totalAmount: number;
+  tableId: number | null;
+  status: string;
+  creatorFullName: string | null;
+  userId: number | null;
+  customerId: number;
+  details: ApiOrderDetailItem[];
+}
 
 interface CreateOrderDetailRequest {
   productId: number;
@@ -17,76 +38,70 @@ interface CreateOrderResponse {
   orderId: number;
 }
 
-const mockOrders: OrderDetail[] = [
-  {
-    orderId: 'ORD-1001',
-    orderDate: '2026-04-18',
-    status: 'completed',
-    totalAmount: 13.4,
-    items: [
-      {
-        productId: 'c1',
-        productName: 'Caffe Latte',
-        quantity: 2,
-        unitPrice: 4.5,
-        subtotal: 9.0
-      },
-      {
-        productId: 'k1',
-        productName: 'Cheesecake Slice',
-        quantity: 1,
-        unitPrice: 4.4,
-        subtotal: 4.4
-      }
-    ]
-  },
-  {
-    orderId: 'ORD-1002',
-    orderDate: '2026-04-20',
-    status: 'paid',
-    totalAmount: 9.1,
-    items: [
-      {
-        productId: 't2',
-        productName: 'Peach Iced Tea',
-        quantity: 1,
-        unitPrice: 3.8,
-        subtotal: 3.8
-      },
-      {
-        productId: 'f1',
-        productName: 'Mocha Freeze',
-        quantity: 1,
-        unitPrice: 5.3,
-        subtotal: 5.3
-      }
-    ]
-  }
-];
-
 const resolveApiUrl = (path: string) => `${appConfig.apiBaseUrl}${path}`;
 
-const parseErrorMessage = async (response: Response): Promise<string> => {
+const parseErrorMessage = async (response: Response, fallback: string): Promise<string> => {
   try {
     const data = (await response.json()) as { message?: string; error?: string; title?: string };
-    return data.message || data.error || data.title || 'Unable to create order. Please try again.';
+    return data.message || data.error || data.title || fallback;
   } catch {
-    return 'Unable to create order. Please try again.';
+    return fallback;
   }
 };
 
+const mapOrderItem = (item: ApiOrderDetailItem): OrderItem => ({
+  productId: String(item.productId),
+  productName: item.productName,
+  quantity: item.quantity,
+  unitPrice: item.unitPrice,
+  subtotal: item.subtotal
+});
+
+const mapOrderSummary = (order: ApiClientOrder): OrderSummary => ({
+  orderId: String(order.id),
+  orderDate: order.orderDate,
+  status: order.status,
+  totalAmount: order.totalAmount
+});
+
+const mapOrderDetail = (order: ApiClientOrder): OrderDetail => ({
+  ...mapOrderSummary(order),
+  items: order.details.map(mapOrderItem)
+});
+
 export const orderService = {
-  getOrders(): OrderSummary[] {
-    return mockOrders.map(({ orderId, orderDate, status, totalAmount }) => ({
-      orderId,
-      orderDate,
-      status,
-      totalAmount
-    }));
+  async fetchClientOrders(token: string): Promise<OrderSummary[]> {
+    const response = await fetch(resolveApiUrl('/api/client/orders'), {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(await parseErrorMessage(response, 'Unable to load orders.'));
+    }
+
+    const data = (await response.json()) as ApiClientOrder[];
+    return data.map(mapOrderSummary);
   },
 
-  getOrderById(orderId: string): OrderDetail | null {
-    return mockOrders.find((order) => order.orderId === orderId) ?? null;
+  async fetchClientOrderById(orderId: string, token: string): Promise<OrderDetail | null> {
+    const response = await fetch(resolveApiUrl(`/api/client/orders/${orderId}`), {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(await parseErrorMessage(response, 'Unable to load order detail.'));
+    }
+
+    const data = (await response.json()) as ApiClientOrder;
+    return mapOrderDetail(data);
   },
 
   async createClientOrder(payload: CreateOrderRequest, token: string): Promise<CreateOrderResponse> {
@@ -100,7 +115,7 @@ export const orderService = {
     });
 
     if (!response.ok) {
-      throw new Error(await parseErrorMessage(response));
+      throw new Error(await parseErrorMessage(response, 'Unable to create order. Please try again.'));
     }
 
     return (await response.json()) as CreateOrderResponse;
