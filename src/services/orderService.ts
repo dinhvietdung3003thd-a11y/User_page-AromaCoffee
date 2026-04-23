@@ -1,11 +1,28 @@
+import { appConfig } from '../config/appConfig';
 import type { OrderDetail, OrderSummary } from '../types/order.types';
+
+interface CreateOrderDetailRequest {
+  productId: number;
+  quantity: number;
+}
+
+interface CreateOrderRequest {
+  orderDate: string;
+  tableId: null;
+  note: string;
+  details: CreateOrderDetailRequest[];
+}
+
+interface CreateOrderResponse {
+  orderId: number;
+}
 
 const mockOrders: OrderDetail[] = [
   {
     orderId: 'ORD-1001',
     orderDate: '2026-04-18',
     status: 'completed',
-    totalAmount: 13.40,
+    totalAmount: 13.4,
     items: [
       {
         productId: 'c1',
@@ -27,7 +44,7 @@ const mockOrders: OrderDetail[] = [
     orderId: 'ORD-1002',
     orderDate: '2026-04-20',
     status: 'paid',
-    totalAmount: 9.10,
+    totalAmount: 9.1,
     items: [
       {
         productId: 't2',
@@ -47,6 +64,17 @@ const mockOrders: OrderDetail[] = [
   }
 ];
 
+const resolveApiUrl = (path: string) => `${appConfig.apiBaseUrl}${path}`;
+
+const parseErrorMessage = async (response: Response): Promise<string> => {
+  try {
+    const data = (await response.json()) as { message?: string; error?: string; title?: string };
+    return data.message || data.error || data.title || 'Unable to create order. Please try again.';
+  } catch {
+    return 'Unable to create order. Please try again.';
+  }
+};
+
 export const orderService = {
   getOrders(): OrderSummary[] {
     return mockOrders.map(({ orderId, orderDate, status, totalAmount }) => ({
@@ -59,5 +87,22 @@ export const orderService = {
 
   getOrderById(orderId: string): OrderDetail | null {
     return mockOrders.find((order) => order.orderId === orderId) ?? null;
+  },
+
+  async createClientOrder(payload: CreateOrderRequest, token: string): Promise<CreateOrderResponse> {
+    const response = await fetch(resolveApiUrl('/api/client/orders'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(await parseErrorMessage(response));
+    }
+
+    return (await response.json()) as CreateOrderResponse;
   }
 };

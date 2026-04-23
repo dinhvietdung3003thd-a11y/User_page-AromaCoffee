@@ -2,11 +2,12 @@ import './ConfirmOrderModal.css';
 
 interface ConfirmOrderModalProps {
   isOpen: boolean;
+  isSubmitting?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-function ConfirmOrderModal({ isOpen, onCancel, onConfirm }: ConfirmOrderModalProps) {
+function ConfirmOrderModal({ isOpen, isSubmitting = false, onCancel, onConfirm }: ConfirmOrderModalProps) {
   if (!isOpen) {
     return null;
   }
@@ -17,11 +18,11 @@ function ConfirmOrderModal({ isOpen, onCancel, onConfirm }: ConfirmOrderModalPro
         <h3>Confirm Order</h3>
         <p>Are you sure you want to place this order?</p>
         <div className="confirm-order-modal__actions">
-          <button onClick={onCancel} type="button">
+          <button disabled={isSubmitting} onClick={onCancel} type="button">
             Cancel
           </button>
-          <button className="confirm-order-modal__confirm" onClick={onConfirm} type="button">
-            Confirm
+          <button className="confirm-order-modal__confirm" disabled={isSubmitting} onClick={onConfirm} type="button">
+            {isSubmitting ? 'Placing...' : 'Confirm'}
           </button>
         </div>
       </div>
