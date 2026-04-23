@@ -4,6 +4,7 @@ import CartDrawer from '../../components/cart/CartDrawer/CartDrawer';
 import ProductSection from '../../components/product/ProductSection/ProductSection';
 import ProductToolbar from '../../components/product/ProductToolbar/ProductToolbar';
 import SearchResultSection from '../../components/product/SearchResultSection/SearchResultSection';
+import { useDebounce } from '../../hooks/useDebounce';
 import { categoryService } from '../../services/categoryService';
 import { productService } from '../../services/productService';
 import { useCartStore } from '../../store/cartStore';
@@ -17,11 +18,17 @@ function OurProductPage() {
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [searchResults, setSearchResults] = useState<ProductItem[]>([]);
+  const [isSearchingLoading, setSearchingLoading] = useState(false);
+  const [catalogErrorMessage, setCatalogErrorMessage] = useState('');
+  const [searchErrorMessage, setSearchErrorMessage] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(defaultCategory);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const searchRequestIdRef = useRef(0);
   const cartStore = useCartStore();
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
 
   useEffect(() => {
     const loadCatalog = async () => {
@@ -35,18 +42,54 @@ function OurProductPage() {
         setProducts(loadedProducts);
       } catch (error) {
         const fallback = 'Unable to load products.';
-        setErrorMessage(error instanceof Error ? error.message : fallback);
+        setCatalogErrorMessage(error instanceof Error ? error.message : fallback);
       }
     };
 
     void loadCatalog();
   }, []);
 
+  useEffect(() => {
+    const normalizedTerm = debouncedSearchTerm.trim();
+
+    if (!normalizedTerm) {
+      setSearchResults([]);
+      setSearchingLoading(false);
+      setSearchErrorMessage('');
+      return;
+    }
+
+    const currentRequestId = ++searchRequestIdRef.current;
+    setSearchingLoading(true);
+    setSearchErrorMessage('');
+
+    const loadSearchResults = async () => {
+      try {
+        const results = await productService.searchProductsElastic(normalizedTerm);
+
+        if (searchRequestIdRef.current !== currentRequestId) {
+          return;
+        }
+
+        setSearchResults(results);
+      } catch (error) {
+        if (searchRequestIdRef.current !== currentRequestId) {
+          return;
+        }
+
+        const fallback = 'Unable to search products.';
+        setSearchErrorMessage(error instanceof Error ? error.message : fallback);
+      } finally {
+        if (searchRequestIdRef.current === currentRequestId) {
+          setSearchingLoading(false);
+        }
+      }
+    };
+
+    void loadSearchResults();
+  }, [debouncedSearchTerm]);
+
   const catalog = useMemo(() => productService.buildCatalog(categories, products), [categories, products]);
-  const searchResults = useMemo(
-    () => productService.searchProducts(searchTerm, catalog.products),
-    [searchTerm, catalog.products]
-  );
   const isSearching = searchTerm.trim().length > 0;
 
   const scrollToCategory = (categoryId: string) => {
@@ -99,10 +142,16 @@ function OurProductPage() {
         onCartClick={cartStore.openDrawer}
       />
 
-      {errorMessage ? <p>{errorMessage}</p> : null}
+      {catalogErrorMessage ? <p>{catalogErrorMessage}</p> : null}
 
       {isSearching ? (
-        <SearchResultSection results={searchResults} searchTerm={searchTerm} onAdd={handleAddToCart} />
+        <SearchResultSection
+          results={searchResults}
+          searchTerm={searchTerm}
+          isLoading={isSearchingLoading}
+          errorMessage={searchErrorMessage}
+          onAdd={handleAddToCart}
+        />
       ) : (
         categoriesWithProducts.map(({ category, products: categoryProducts }) => (
           <ProductSection

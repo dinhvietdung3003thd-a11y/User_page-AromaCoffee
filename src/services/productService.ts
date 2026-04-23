@@ -14,9 +14,7 @@ interface ApiProduct {
 
 const resolveApiUrl = (path: string) => `${appConfig.apiBaseUrl}${path}`;
 
-const normalize = (value: string) => value.trim().toLowerCase();
-
-const mapProduct = (product: ApiProduct): ProductItem => ({
+const mapApiProduct = (product: ApiProduct): ProductItem => ({
   id: String(product.productId),
   categoryId: String(product.categoryId),
   categoryName: product.categoryName,
@@ -37,7 +35,7 @@ export const productService = {
     }
 
     const data = (await response.json()) as ApiProduct[];
-    return data.map(mapProduct);
+    return data.map(mapApiProduct);
   },
 
   async fetchProductById(id: string): Promise<ProductItem | null> {
@@ -52,7 +50,20 @@ export const productService = {
     }
 
     const data = (await response.json()) as ApiProduct;
-    return mapProduct(data);
+    return mapApiProduct(data);
+  },
+
+  async searchProductsElastic(keyword: string): Promise<ProductItem[]> {
+    const response = await fetch(
+      resolveApiUrl(`/api/Product/search-elastic?keyword=${encodeURIComponent(keyword)}`)
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to search products.');
+    }
+
+    const data = (await response.json()) as ApiProduct[];
+    return data.map(mapApiProduct);
   },
 
   buildCatalog(categories: ProductCategory[], products: ProductItem[]): ProductCatalog {
@@ -61,18 +72,5 @@ export const productService = {
 
   getProductsByCategory(categoryId: string, products: ProductItem[]): ProductItem[] {
     return products.filter((product) => product.categoryId === categoryId);
-  },
-
-  searchProducts(term: string, products: ProductItem[]): ProductItem[] {
-    const normalizedTerm = normalize(term);
-
-    if (!normalizedTerm) {
-      return [];
-    }
-
-    return products.filter((product) => {
-      const searchable = `${product.name} ${product.description}`.toLowerCase();
-      return searchable.includes(normalizedTerm);
-    });
   }
 };
