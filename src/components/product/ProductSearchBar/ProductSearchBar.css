@@ -1,0 +1,8 @@
+.product-search-bar {
+  width: min(360px, 100%);
+  height: 38px;
+  border: 1px solid #d8c8bf;
+  border-radius: 0.5rem;
+  padding: 0 0.75rem;
+  background-color: #fff;
+}
