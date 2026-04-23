@@ -4,23 +4,49 @@ import CartDrawer from '../../components/cart/CartDrawer/CartDrawer';
 import ProductSection from '../../components/product/ProductSection/ProductSection';
 import ProductToolbar from '../../components/product/ProductToolbar/ProductToolbar';
 import SearchResultSection from '../../components/product/SearchResultSection/SearchResultSection';
+import { categoryService } from '../../services/categoryService';
 import { productService } from '../../services/productService';
 import { useCartStore } from '../../store/cartStore';
-import type { ProductCategory } from '../../types/product.types';
+import type { ProductCategory, ProductItem } from '../../types/product.types';
 import './OurProductPage.css';
 
 function OurProductPage() {
   const [searchParams] = useSearchParams();
   const defaultCategory = searchParams.get('category');
 
-  const catalog = useMemo(() => productService.getProductCatalog(), []);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(defaultCategory);
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const cartStore = useCartStore();
 
-  const searchResults = useMemo(() => productService.searchProducts(searchTerm), [searchTerm]);
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const [loadedCategories, loadedProducts] = await Promise.all([
+          categoryService.fetchCategories(),
+          productService.fetchProducts()
+        ]);
+
+        setCategories(loadedCategories);
+        setProducts(loadedProducts);
+      } catch (error) {
+        const fallback = 'Unable to load products.';
+        setErrorMessage(error instanceof Error ? error.message : fallback);
+      }
+    };
+
+    void loadCatalog();
+  }, []);
+
+  const catalog = useMemo(() => productService.buildCatalog(categories, products), [categories, products]);
+  const searchResults = useMemo(
+    () => productService.searchProducts(searchTerm, catalog.products),
+    [searchTerm, catalog.products]
+  );
   const isSearching = searchTerm.trim().length > 0;
 
   const scrollToCategory = (categoryId: string) => {
@@ -50,11 +76,11 @@ function OurProductPage() {
 
   const categoriesWithProducts = useMemo(
     () =>
-      catalog.categories.map((category: ProductCategory) => ({
+      catalog.categories.map((category) => ({
         category,
-        products: productService.getProductsByCategory(category.id)
+        products: productService.getProductsByCategory(category.id, catalog.products)
       })),
-    [catalog.categories]
+    [catalog.categories, catalog.products]
   );
 
   const handleAddToCart = (productId: string) => {
@@ -73,14 +99,16 @@ function OurProductPage() {
         onCartClick={cartStore.openDrawer}
       />
 
+      {errorMessage ? <p>{errorMessage}</p> : null}
+
       {isSearching ? (
         <SearchResultSection results={searchResults} searchTerm={searchTerm} onAdd={handleAddToCart} />
       ) : (
-        categoriesWithProducts.map(({ category, products }) => (
+        categoriesWithProducts.map(({ category, products: categoryProducts }) => (
           <ProductSection
             key={category.id}
             category={category}
-            products={products}
+            products={categoryProducts}
             onAdd={handleAddToCart}
             sectionRef={(element) => {
               sectionRefs.current[category.id] = element;
