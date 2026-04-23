@@ -1,8 +1,10 @@
 export interface AuthUser {
-  id: string;
-  displayName: string;
-  email: string;
-  avatarUrl: string;
+  customerId: number;
+  fullName: string;
+  loyaltyPoints: number;
+  role: string;
+  email?: string;
+  avatarUrl?: string;
 }
 
 export interface AuthState {

@@ -1,42 +1,78 @@
+import { appConfig } from '../config/appConfig';
 import type { AuthUser } from '../types/auth.types';
 
-interface AuthPayload {
+interface CustomerLoginRequest {
+  username: string;
+  password: string;
+}
+
+interface CustomerLoginResponse {
+  customerId: number;
+  fullName: string;
+  loyaltyPoints: number;
+  role: string;
+  token: string;
+}
+
+interface CustomerRegisterRequest {
+  username: string;
+  password: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+}
+
+interface CustomerRegisterResponse {
+  message: string;
+}
+
+interface LoginResult {
   token: string;
   user: AuthUser;
 }
 
-interface LoginInput {
-  email: string;
-  password: string;
-}
-
-interface RegisterInput {
-  displayName: string;
-  email: string;
-  password: string;
-}
-
-const createMockUser = (displayName: string, email: string): AuthUser => ({
-  id: `user-${email.toLowerCase()}`,
-  displayName,
-  email,
-  avatarUrl: 'https://i.pravatar.cc/100?img=14'
-});
+const resolveApiUrl = (path: string) => `${appConfig.apiBaseUrl}${path}`;
 
 export const authService = {
-  login(input: LoginInput): AuthPayload {
-    const normalizedEmail = input.email.trim().toLowerCase();
+  async login(input: CustomerLoginRequest): Promise<LoginResult> {
+    const response = await fetch(resolveApiUrl('/api/Auth/customer/login'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(input)
+    });
+
+    if (!response.ok) {
+      throw new Error('Login failed. Please check your credentials.');
+    }
+
+    const data = (await response.json()) as CustomerLoginResponse;
 
     return {
-      token: `mock-token-${Date.now()}`,
-      user: createMockUser(normalizedEmail.split('@')[0] || 'User', normalizedEmail)
+      token: data.token,
+      user: {
+        customerId: data.customerId,
+        fullName: data.fullName,
+        loyaltyPoints: data.loyaltyPoints,
+        role: data.role
+      }
     };
   },
 
-  register(input: RegisterInput): AuthPayload {
-    return {
-      token: `mock-token-${Date.now()}`,
-      user: createMockUser(input.displayName.trim() || 'User', input.email.trim().toLowerCase())
-    };
+  async register(input: CustomerRegisterRequest): Promise<CustomerRegisterResponse> {
+    const response = await fetch(resolveApiUrl('/api/Auth/customer/register'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(input)
+    });
+
+    if (!response.ok) {
+      throw new Error('Register failed. Please try again.');
+    }
+
+    return (await response.json()) as CustomerRegisterResponse;
   }
 };

@@ -2,30 +2,33 @@ import { useState } from 'react';
 import './RegisterForm.css';
 
 interface RegisterFormProps {
-  onSubmit: (displayName: string, email: string, password: string) => void;
+  onSubmit: (input: {
+    username: string;
+    password: string;
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+  }) => Promise<void>;
 }
 
 function RegisterForm({ onSubmit }: RegisterFormProps) {
-  const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
 
   return (
     <form
       className="register-form"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
-        onSubmit(displayName, email, password);
+        await onSubmit({ username, password, fullName, phoneNumber, email });
       }}
     >
       <label>
-        Name
-        <input required value={displayName} onChange={(event) => setDisplayName(event.target.value)} />
-      </label>
-
-      <label>
-        Email
-        <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        Username
+        <input required value={username} onChange={(event) => setUsername(event.target.value)} />
       </label>
 
       <label>
@@ -36,6 +39,21 @@ function RegisterForm({ onSubmit }: RegisterFormProps) {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+      </label>
+
+      <label>
+        Full Name
+        <input required value={fullName} onChange={(event) => setFullName(event.target.value)} />
+      </label>
+
+      <label>
+        Phone Number
+        <input required value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} />
+      </label>
+
+      <label>
+        Email
+        <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
       </label>
 
       <button type="submit">Register</button>

@@ -41,8 +41,12 @@ function Navbar() {
           </>
         ) : (
           <div className="navbar__user" aria-label="Current user">
-            <img alt="User avatar" className="navbar__avatar" src={user?.avatarUrl} />
-            <span>{user?.displayName}</span>
+            <img
+              alt="User avatar"
+              className="navbar__avatar"
+              src={user?.avatarUrl || '/placeholder-product.png'}
+            />
+            <span>{user?.fullName || 'Customer'}</span>
           </div>
         )}
       </div>

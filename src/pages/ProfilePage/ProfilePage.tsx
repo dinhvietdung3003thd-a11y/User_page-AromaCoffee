@@ -21,12 +21,16 @@ function ProfilePage() {
 
       <div className="profile-page__card">
         <div className="profile-page__avatar-wrap">
-          <img alt="User avatar" className="profile-page__avatar" src={user.avatarUrl || '/placeholder-product.png'} />
+          <img
+            alt="User avatar"
+            className="profile-page__avatar"
+            src={user.avatarUrl || '/placeholder-product.png'}
+          />
         </div>
         <p>
-          <strong>{user.displayName}</strong>
+          <strong>{user.fullName}</strong>
         </p>
-        <p>{user.email}</p>
+        <p>{user.email || 'Email not available'}</p>
 
         <div className="profile-page__actions">
           <button onClick={() => navigate('/my-orders')} type="button">

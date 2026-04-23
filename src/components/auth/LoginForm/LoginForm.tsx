@@ -2,24 +2,24 @@ import { useState } from 'react';
 import './LoginForm.css';
 
 interface LoginFormProps {
-  onSubmit: (email: string, password: string) => void;
+  onSubmit: (username: string, password: string) => Promise<void>;
 }
 
 function LoginForm({ onSubmit }: LoginFormProps) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   return (
     <form
       className="login-form"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
-        onSubmit(email, password);
+        await onSubmit(username, password);
       }}
     >
       <label>
-        Email
-        <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        Username
+        <input required value={username} onChange={(event) => setUsername(event.target.value)} />
       </label>
 
       <label>
