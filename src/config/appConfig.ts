@@ -1,4 +1,4 @@
 export const appConfig = {
   appName: 'Aroma Coffee',
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? ''
+  apiBaseUrl: 'http://localhost:5035'
 } as const;
