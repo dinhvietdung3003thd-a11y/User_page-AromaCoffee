@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar/Navbar';
+import ChangePasswordPage from '../pages/ChangePasswordPage/ChangePasswordPage';
 import HomePage from '../pages/HomePage/HomePage';
 import LoginPage from '../pages/LoginPage/LoginPage';
 import MyOrdersPage from '../pages/MyOrdersPage/MyOrdersPage';
@@ -19,6 +20,7 @@ function AppRouter() {
         <Route path={routePaths.myOrders} element={<MyOrdersPage />} />
         <Route path={routePaths.myOrderDetail} element={<OrderDetailPage />} />
         <Route path={routePaths.profile} element={<ProfilePage />} />
+        <Route path={routePaths.changePassword} element={<ChangePasswordPage />} />
         <Route path={routePaths.login} element={<LoginPage />} />
         <Route path={routePaths.register} element={<RegisterPage />} />
       </Routes>
