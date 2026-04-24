@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { routePaths } from '../../router/routePaths';
 import { useAuthStore } from '../../store/authStore';
 import './ProfilePage.css';
 
@@ -33,13 +34,16 @@ function ProfilePage() {
         <p>{user.email || 'Email not available'}</p>
 
         <div className="profile-page__actions">
-          <button onClick={() => navigate('/my-orders')} type="button">
+          <button onClick={() => navigate(routePaths.myOrders)} type="button">
             My Orders
+          </button>
+          <button onClick={() => navigate(routePaths.changePassword)} type="button">
+            Change Password
           </button>
           <button
             onClick={() => {
               logout();
-              navigate('/login');
+              navigate(routePaths.login);
             }}
             type="button"
           >

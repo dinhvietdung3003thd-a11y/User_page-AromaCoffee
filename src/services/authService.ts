@@ -31,6 +31,17 @@ interface LoginResult {
   user: AuthUser;
 }
 
+interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface ChangePasswordResponse {
+  message: string;
+  token: string;
+}
+
 const resolveApiUrl = (path: string) => `${appConfig.apiBaseUrl}${path}`;
 
 export const authService = {
@@ -74,5 +85,25 @@ export const authService = {
     }
 
     return (await response.json()) as CustomerRegisterResponse;
+  },
+
+  async changePassword(
+    token: string,
+    input: ChangePasswordRequest
+  ): Promise<ChangePasswordResponse> {
+    const response = await fetch(resolveApiUrl('/api/Auth/change-password'), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(input)
+    });
+
+    if (!response.ok) {
+      throw new Error('Change password failed. Please try again.');
+    }
+
+    return (await response.json()) as ChangePasswordResponse;
   }
 };
